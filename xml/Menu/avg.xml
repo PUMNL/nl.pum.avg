@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/avg/anonymize</path>
+    <page_callback>CRM_Avg_Form_AnonymizeUser</page_callback>
+    <title>AnonymizeUser</title>
+    <access_arguments>avg_anonymize_user</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/avg/anonymize/complete</path>
+    <page_callback>CRM_Avg_Page_AnonymizeResult</page_callback>
+    <title>AnonymizeResult</title>
+    <access_arguments>avg_anonymize_user</access_arguments>
+  </item>
+  <item>
+    <path>civicrm/avg/batch_anonymizer</path>
+    <page_callback>CRM_Avg_Page_BatchAnonymizer</page_callback>
+    <title>AVG Batch Anonymizer</title>
+    <access_arguments>avg_batch_anonymize_users</access_arguments>
+  </item>
+</menu>
