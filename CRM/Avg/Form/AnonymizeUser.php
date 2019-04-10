@@ -32,9 +32,9 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
       $contact = civicrm_api('Contact', 'get', $contact_params);
 
       if(!empty($contact['values'][0]['display_name'])) {
-        CRM_Utils_System::setTitle(ts('Anonimize User: '.$contact['values'][0]['display_name']));
+        CRM_Utils_System::setTitle(ts('Anonymize User: '.$contact['values'][0]['display_name']));
       } else {
-        CRM_Utils_System::setTitle(ts('Anonimize User ID: '.$cid));
+        CRM_Utils_System::setTitle(ts('Anonymize User ID: '.$cid));
       }
 
       // add form elements

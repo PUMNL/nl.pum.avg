@@ -214,8 +214,8 @@ function avg_civicrm_pre($op, $objectName, $objectId, &$objectRef){
       'version' => 3,
       'sequential' => 1,
       'id' => $objectId,
-      'title' => 'Anonimize Exit Users',
-      'description' => 'Anonimize Exit Users',
+      'title' => 'Anonymize Exit Users',
+      'description' => 'Anonymize Exit Users',
       'permission' => 'avg_batch_anonymize_users',
     );
     $result = civicrm_api('ReportInstance', 'update', $params);
