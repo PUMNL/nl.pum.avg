@@ -59,6 +59,9 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
     if(!empty($values['remove_personaldata']) && $values['remove_personaldata'] == 'yes') {
       $AvgUtils->removePersonalData();
     }
+    if(!empty($values['remove_additionaldata']) && $values['remove_additionaldata'] == 'yes') {
+      $AvgUtils->removeAdditionalData();
+    }
     if(!empty($values['remove_jobtitle']) && $values['remove_jobtitle'] == 'yes') {
       $AvgUtils->removeJobTitle();
     }

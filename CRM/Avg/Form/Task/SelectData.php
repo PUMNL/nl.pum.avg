@@ -42,6 +42,13 @@ class CRM_Avg_Form_Task_SelectData extends CRM_Contact_Form_Task {
     );
     $this->addElement(
       'select', // field type
+      'remove_additionaldata', // field name
+      'Additional Data', // field label
+      self::getYesNoOptions(), // list of options
+      FALSE // is required
+    );
+    $this->addElement(
+      'select', // field type
       'remove_jobtitle', // field name
       'Job title', // field label
       self::getYesNoOptions(), // list of options

@@ -260,7 +260,6 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
     }
     if(!empty($values['remove_personaldata']) && $values['remove_personaldata'] == 'yes') {
       $AvgUtils->removePersonalData();
-      $AvgUtils->removeCustomGroupDataOfContact('Nationality');
     }
     if(!empty($values['remove_additionaldata']) && $values['remove_additionaldata'] == 'yes') {
       $AvgUtils->removeAdditionalData();
