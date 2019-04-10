@@ -61,11 +61,29 @@ class CRM_Avg_Form_Report_CleanInactiveUsers extends CRM_Report_Form {
 
   function postProcess() {
     set_time_limit(0);
-    $sql = "SELECT DISTINCT gc.contact_id, gc.status, con.first_name, con.middle_name, con.last_name, eml.email, ed.expert_status_123
+
+    $params_expertStatusField = array(
+      'version' => 3,
+      'sequential' => 1,
+      'custom_group_name' => 'Expert data',
+      'name' => 'expert_status',
+      'return' => 'column_name',
+    );
+    $expertStatusField = civicrm_api('CustomField', 'getvalue', $params_expertStatusField);
+
+    $params_expertDataTable = array(
+      'version' => 3,
+      'sequential' => 1,
+      'name' => 'expert_data',
+      'return' => 'table_name',
+    );
+    $expertDataTable = civicrm_api('CustomGroup', 'getvalue', $params_expertDataTable);
+
+    $sql = "SELECT DISTINCT gc.contact_id, gc.status, con.first_name, con.middle_name, con.last_name, eml.email, ed.{$expertStatusField}
             FROM civicrm_group_contact gc
             LEFT JOIN civicrm_contact con ON con.id = gc.contact_id
             LEFT JOIN civicrm_email eml ON eml.contact_id = con.id
-            LEFT JOIN civicrm_value_expert_data_20 ed ON ed.entity_id = con.id
+            LEFT JOIN {$expertDataTable} ed ON ed.entity_id = con.id
             WHERE (
               (gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title = 'Former Expert'))
               AND
@@ -73,6 +91,7 @@ class CRM_Avg_Form_Report_CleanInactiveUsers extends CRM_Report_Form {
             )
             AND (gc.status = 'Added')
             AND eml.is_primary = '1'
+            AND ed.{$expertStatusField} = 'Exit'
             ORDER BY gc.contact_id";
 
   	//Set column headers for the report

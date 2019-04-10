@@ -42,7 +42,7 @@ class CRM_Avg_Utils {
                           'birth_date' => '',
                           'image_URL' => '',
                           'source' => 'Anonymized');
-          $results[] = civicrm_api('contact','update',$params);
+          $results[] = civicrm_api('Contact','update',$params);
         } catch (CiviCRM_API3_Exception $e) {
 
         }
@@ -78,7 +78,7 @@ class CRM_Avg_Utils {
                         'sequential' => 1,
                         'id' => $this->cid,
                         'custom_'.$value['id'] => '');
-          $results[] = civicrm_api('contact','update',$params);
+          $results[] = civicrm_api('Contact','update',$params);
         }
       }
     }
@@ -287,7 +287,7 @@ class CRM_Avg_Utils {
                           'sequential' => 1,
                           'id' => $this->cid,
                           'custom_'.$value['id'] => '');
-          $result = civicrm_api('contact','update',$params);
+          $result = civicrm_api('Contact','update',$params);
         }
       } catch (CiviCRM_API3_Exception $e) {
 
@@ -340,7 +340,7 @@ class CRM_Avg_Utils {
                       'sequential' => 1,
                       'id' => $this->cid,
                       'gender_id' => '');
-      $result = civicrm_api('contact','update',$params);
+      $result = civicrm_api('Contact','update',$params);
     }
   }
 
@@ -668,7 +668,7 @@ class CRM_Avg_Utils {
   public function removeDocuments(){
     try{
       if(is_numeric($this->cid)) {
-        $localExtensions = civicrm_api3('Extension', 'Get', array());
+        $localExtensions = civicrm_api('Extension', 'get', array('version' => 3, 'sequential' => 1));
 
         $extensionInstalled = FALSE;
         if(is_array($localExtensions['values'])) {
