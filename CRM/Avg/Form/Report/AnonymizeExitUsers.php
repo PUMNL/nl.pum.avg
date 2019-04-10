@@ -48,6 +48,9 @@ class CRM_Avg_Form_Report_AnonymizeExitUsers extends CRM_Report_Form {
 														'fields'    => $this->_fields,
 														'grouping' 	=> 'contact-fields'));
 
+    //Make sure _sendmail is defined, because otherwise warning is triggerd
+    $this->_sendmail = FALSE;
+
     parent::__construct();
   }
 
@@ -102,7 +105,7 @@ class CRM_Avg_Form_Report_AnonymizeExitUsers extends CRM_Report_Form {
     $contacts = array();
 
     //Check if button 'Anonymize all selected users' is pressed
-    if($this->_submitValues['_qf_default'] == 'AnonymizeExitUsers:submit') {
+    if(!empty($this->_submitValues['_qf_default']) && $this->_submitValues['_qf_default'] == 'AnonymizeExitUsers:submit') {
       if(!empty($this->_submitValues['_qf_AnonymizeExitUsers_submit_save']) && $this->_submitValues['_qf_AnonymizeExitUsers_submit_save'] == 'Create Report') {
 
       } else {
@@ -159,16 +162,19 @@ class CRM_Avg_Form_Report_AnonymizeExitUsers extends CRM_Report_Form {
     $this->doTemplateAssignment($rows);
     $this->endPostProcess($rows);
   }
-
+/*
   function alterDisplay(&$rows) {
-    foreach ($rows as $rowNum => $row) {
-      if (array_key_exists('contact_id', $row)) {
-        if ($viewLinks) {
-          $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
-          $rows[$rowNum]['civicrm_contact_contact_source_link'] = $url;
-          $rows[$rowNum]['civicrm_contact_contact_source_hover'] = $onHover;
+    if(is_array($rows)) {
+      foreach ($rows as $rowNum => $row) {
+        if (array_key_exists('contact_id', $row)) {
+          if ($viewLinks) {
+            $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
+            $rows[$rowNum]['civicrm_contact_contact_source_link'] = $url;
+            $rows[$rowNum]['civicrm_contact_contact_source_hover'] = $onHover;
+          }
         }
       }
     }
   }
+*/
 }

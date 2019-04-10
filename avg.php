@@ -209,7 +209,7 @@ function avg_civicrm_permission(&$permissions) {
 }
 
 function avg_civicrm_pre($op, $objectName, $objectId, &$objectRef){
-  if($op == 'create' && $objectName == 'ReportInstance' && $objectRef->report_id == 'anonymizeexitusers' && !empty($objectId)){
+  if($op == 'create' && $objectName == 'ReportInstance' && !empty($objectId) && !empty($objectRef->report_id) && $objectRef->report_id == 'anonymizeexitusers'){
     $params = array(
       'version' => 3,
       'sequential' => 1,
@@ -221,7 +221,7 @@ function avg_civicrm_pre($op, $objectName, $objectId, &$objectRef){
     $result = civicrm_api('ReportInstance', 'update', $params);
   }
 
-  if($op == 'create' && $objectName == 'ReportInstance' && $objectRef->report_id == 'cleaninactiveusers' && !empty($objectId)){
+  if($op == 'create' && $objectName == 'ReportInstance' && !empty($objectId) && !empty($objectRef->report_id) && $objectRef->report_id == 'cleaninactiveusers'){
     $params = array(
       'version' => 3,
       'sequential' => 1,
