@@ -30,8 +30,35 @@ class CRM_Avg_Upgrader extends CRM_Avg_Upgrader_Base {
       );
       $result = civicrm_api('Group', 'create', $params);
     }
+
+    return TRUE;
   }
 
+  public function upgrade_1001($info=TRUE) {
+    if ($info) {
+      $this->ctx->log->info('Applying update 1001');
+    }
+
+    $params = array(
+      'version' => 3,
+      'sequential' => 1,
+      'title' => 'Cleaned Inactive Users',
+    );
+    $result = civicrm_api('Group', 'get', $params);
+
+    if($result['count'] == 0){
+      //Create group Cleaned Inactive Users
+      $params = array(
+        'version' => 3,
+        'sequential' => 1,
+        'title' => 'Cleaned Inactive Users',
+        'is_reserved' => 1,
+      );
+      $result = civicrm_api('Group', 'create', $params);
+    }
+
+    return TRUE;
+  }
   /**
    * Example: Work with entities usually not available during the install step.
    *

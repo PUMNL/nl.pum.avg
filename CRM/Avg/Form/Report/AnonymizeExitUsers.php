@@ -12,11 +12,6 @@ class CRM_Avg_Form_Report_AnonymizeExitUsers extends CRM_Report_Form {
 										'default' => TRUE,
 										'required' => TRUE,
   										'no_repeat' => TRUE),
-					'status' => array(
-										'name' => 'status',
-										'title' => ts('Status'),
-										'default' => TRUE,
-  										'no_repeat' => TRUE),
 		 			'first_name' 	=> array(
 		 								'name' => 'first_name',
 					 					'title' => ts('First Name'),
@@ -35,11 +30,6 @@ class CRM_Avg_Form_Report_AnonymizeExitUsers extends CRM_Report_Form {
           'email' 	=> array(
 										'name' => 'email',
 										'title' => ts('E-mail'),
-										'default' => TRUE,
-  										'no_repeat' => TRUE),
-          'expert_status_123' 	=> array(
-										'name' => 'expert_status_123',
-										'title' => ts('Expert Status'),
 										'default' => TRUE,
   										'no_repeat' => TRUE));
 
@@ -87,14 +77,16 @@ class CRM_Avg_Form_Report_AnonymizeExitUsers extends CRM_Report_Form {
             LEFT JOIN civicrm_contact con ON con.id = gc.contact_id
             LEFT JOIN civicrm_email eml ON eml.contact_id = con.id
             LEFT JOIN {$expertDataTable} ed ON ed.entity_id = con.id
-            WHERE (
-              (gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title = 'Former Expert'))
-              AND
-              (gc.group_id NOT IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Anonymized Users','Active Expert')))
+            WHERE
+            ( -- In group former expert or rejected expert with status Exit
+            ( ed.{$expertStatusField} = 'Exit' and gc.status = 'Added' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Former Expert','Rejected Expert')))
+            OR
+            -- Or was in group Representatives
+            (gc.status = 'Removed' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Representatives')))
             )
-            AND (gc.status = 'Added')
+            AND NOT EXISTS -- But not an active expert or anonymized user or cleaned inactive user
+            (SELECT DISTINCT gc2.contact_id FROM civicrm_group_contact gc2 WHERE gc.contact_id = gc2.contact_id and gc2.status = 'Added' and gc2.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Anonymized Users','Active Expert','Cleaned Inactive Users')))
             AND eml.is_primary = '1'
-            AND ed.{$expertStatusField} = 'Exit'
             ORDER BY gc.contact_id";
 
   	//Set column headers for the report

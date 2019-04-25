@@ -737,4 +737,42 @@ class CRM_Avg_Utils {
       CRM_Core_Error::debug_log_message($e->getCode()." - ".$e->getMessage(), FALSE);
     }
   }
+
+  /**
+   * CRM_Avg_Utils::addUserToAnonymizedUsers()
+   *
+   * Function to add an anonymized user to group anonymized users
+   *
+   * @return void
+   */
+  public function addUserToCleanedInactiveUsers(){
+    try{
+      if(is_numeric($this->cid)) {
+        $params_group = array(
+          'version' => 3,
+          'sequential' => 1,
+          'title' => 'Cleaned Inactive Users',
+        );
+        $result_group = civicrm_api('Group', 'get', $params_group);
+
+        if(!empty($result_group['id'])) {
+          $params_groupcontact = array(
+            'version' => 3,
+            'sequential' => 1,
+            'contact_id' => $this->cid,
+            'group_id' => $result_group['id'],
+          );
+          $result_groupcontact = civicrm_api('GroupContact', 'create', $params_groupcontact);
+        }
+
+        if(!empty($result_groupcontact['is_error']) && $result_groupcontact['is_error'] == 0){
+          return TRUE;
+        } else {
+          return FALSE;
+        }
+      }
+    } catch (Exception $e) {
+      CRM_Core_Error::debug_log_message($e->getCode()." - ".$e->getMessage(), FALSE);
+    }
+  }
 }
