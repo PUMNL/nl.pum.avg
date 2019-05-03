@@ -27,7 +27,7 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
    */
   static function onEnd(CRM_Queue_TaskContext $ctx) {
     //set a status message for the user
-    CRM_Core_Session::setStatus('Contacts have been anonymized', 'Queue', 'success');
+    CRM_Core_Session::setStatus('All selected users are anonymized or cleaned. All sensitive data for the selected users has been removed.', 'Queue', 'success');
   }
 
   /**
@@ -117,7 +117,13 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
       $AvgUtils->removeDocuments();
     }
 
-    $AvgUtils->addUserToAnonymizedUsers();
+    //Extra parameter for in batch
+    if(!empty($values['anonymize']) && $values['anonymize'] == 'yes') {
+      $AvgUtils->addUserToAnonymizedUsers();
+    }
+    if(!empty($values['clean']) && $values['clean'] == 'yes') {
+      $AvgUtils->addUserToCleanedInactiveUsers();
+    }
 
     return true;
   }

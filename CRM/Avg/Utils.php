@@ -775,4 +775,8 @@ class CRM_Avg_Utils {
       CRM_Core_Error::debug_log_message($e->getCode()." - ".$e->getMessage(), FALSE);
     }
   }
+
+  public function batchFinishedExecutionMessage(){
+    CRM_Core_Session::setStatus('All tasks in queue have been executed successfully', 'AVG', 'success');
+  }
 }

@@ -98,10 +98,10 @@ class CRM_Avg_Form_Report_CleanInactiveUsers extends CRM_Report_Form {
 
     //Check if button 'Clean all selected users' is pressed
     if(!empty($this->_submitValues['_qf_default']) && $this->_submitValues['_qf_default'] == 'CleanInactiveUsers:submit') {
-      if(!empty($this->_submitValues['_qf_AnonymizeExitUsers_submit_save']) && $this->_submitValues['_qf_AnonymizeExitUsers_submit_save'] == 'Create Report') {
+      if(!empty($this->_submitValues['_qf_CleanInactiveUsers_submit_save']) && $this->_submitValues['_qf_CleanInactiveUsers_submit_save'] == 'Create Report') {
 
       } else {
-        $hasPermission = CRM_Core_Permission::check('avg_batch_anonymize_users');
+        $hasPermission = CRM_Core_Permission::check('avg_batch_clean_inactive_users');
 
         if($hasPermission == TRUE) {
           foreach($_POST as $key => $value) {
@@ -111,37 +111,52 @@ class CRM_Avg_Form_Report_CleanInactiveUsers extends CRM_Report_Form {
             }
           }
 
-          //If contacts array is not empty, anonymize button is pressed
+          $queue = CRM_Queue_Service::singleton()->create(array(
+            'type' => 'Sql',
+            'name' => 'nl.pum.avg',
+            'reset' => false, //do not flush queue upon creation
+          ));
+
           if(!empty($contacts) && is_array($contacts)) {
-            foreach($contacts as $key => $cid) {
-              $AvgUtils = new CRM_Avg_Utils($cid);
-              //$AvgUtils->removePersonalData();
-              $AvgUtils->blockUserAccount();
-              $AvgUtils->removeDrupalRolesOfUser();
-              //$AvgUtils->removeJobTitle();
-              //$AvgUtils->removeName();
-              //$AvgUtils->removeNameFromCaseTitles();
-              $AvgUtils->removeExpertData();
-              //$AvgUtils->removeGender();
-              //$AvgUtils->removeAddresses();
-              //$AvgUtils->removePhoneNumbers();
-              //$AvgUtils->removeMailAddresses();
-              $AvgUtils->removeWorkhistory();
-              $AvgUtils->removeEducation();
-              $AvgUtils->removeLanguages();
-              $AvgUtils->removeCustomGroupDataOfContact('Passport Information');
-              $AvgUtils->removeCustomGroupDataOfContact('In Case of Emergency Contact');
-              $AvgUtils->removeCustomGroupDataOfContact('Bank Information');
-              $AvgUtils->removeCustomGroupDataOfContact('Medical Information');
-              $AvgUtils->removeCustomGroupDataOfContact('Flight Information');
-              $AvgUtils->removeAdditionalData();
-              $AvgUtils->removeFromGroups();
-              $AvgUtils->removeContactSegments();
-              $AvgUtils->removeDocuments();
-              $AvgUtils->addUserToCleanedInactiveUsers();
+            foreach($contacts as $cid) {
+              //create a task
+              $task = new CRM_Queue_Task(
+                array('CRM_Avg_Page_BatchAnonymizer', 'Anonymize'), //call back method
+                array($cid,array(
+                  'block_useraccount' => 'yes',
+                  'remove_drupalroles' => 'yes',
+                  'remove_name' => 'no',
+                  'remove_namefromcasetitles' => 'no',
+                  'remove_personaldata' => 'no',
+                  'remove_additionaldata' => 'yes',
+                  'remove_jobtitle' => 'no',
+                  'remove_passportinformation' => 'yes',
+                  'remove_incaseofemergency' => 'yes',
+                  'remove_bankinformation' => 'yes',
+                  'remove_nationality' => 'yes',
+                  'remove_medical' => 'yes',
+                  'remove_flight' => 'yes',
+                  'remove_expertdata' => 'yes',
+                  'remove_gender' => 'no',
+                  'remove_addresses' => 'no',
+                  'remove_mailaddresses' => 'no',
+                  'remove_phonenumbers' => 'no',
+                  'remove_workhistory' => 'yes',
+                  'remove_education' => 'yes',
+                  'remove_languages' => 'yes',
+                  'remove_groups' => 'yes',
+                  'remove_contactsegments' => 'yes',
+                  'remove_documents' => 'yes',
+                  'clean' => 'yes', //extra parameter for anonymize or clean
+                ))
+              );
+              //now add this task to the queue
+              $queue->createItem($task);
             }
-            drupal_set_message(t('All sensative data for the selected users has been cleared.'));
           }
+
+          $url = CRM_Utils_System::url('civicrm/avg/batch_anonymizer');
+          CRM_Utils_System::redirect($url);
         } else {
           drupal_set_message(t('You are not allowed to clean inactive users'), 'error');
         }
@@ -153,17 +168,4 @@ class CRM_Avg_Form_Report_CleanInactiveUsers extends CRM_Report_Form {
     $this->doTemplateAssignment($rows);
     $this->endPostProcess($rows);
   }
-/*
-  function alterDisplay(&$rows) {
-    foreach ($rows as $rowNum => $row) {
-      if (array_key_exists('contact_id', $row)) {
-        if ($viewLinks) {
-          $url = CRM_Utils_System::url("civicrm/contact/view", 'reset=1&cid=' . $value, $this->_absoluteUrl);
-          $rows[$rowNum]['civicrm_contact_contact_source_link'] = $url;
-          $rows[$rowNum]['civicrm_contact_contact_source_hover'] = $onHover;
-        }
-      }
-    }
-  }
-*/
 }
