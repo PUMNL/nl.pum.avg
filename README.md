@@ -1,6 +1,6 @@
 # nl.pum.avg
 
-This extension can anonymize a contact or a list of contacts from the contact lists at once.
+This CiviCRM-extension can anonymize a contact or a list of contacts from the contact lists at once.
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
@@ -44,6 +44,12 @@ There are 3 new permissions for this extension
 
 Please make sure that you configure these permissions for the right roles after installation,
 otherwise you might not see all available options for your role.
+
+This extension can run the cleanup of users using a scheduled job.
+To configure the scheduled job, goto Administer --> System Settings --> Scheduled Jobs --> Add New Scheduled Job -->
+Enter a name and description, select the run frequency of your choice, and fill API call with entity: Avg, action: Clean
+Then select whether the scheduled job should be active (so scheduled at selected frequency) or not.
+![Screenshot](https://raw.github.com/PUMNL/nl.pum.avg/master/images/scheduled_job.png)
 
 ## Usage
 
