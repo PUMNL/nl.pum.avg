@@ -12,7 +12,7 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
     ));
 
     $runner = new CRM_Queue_Runner(array(
-      'title' => ts('Batch anonymizer'), //title fo the queue
+      'title' => ts('Batch cleaner / anonymizer'), //title fo the queue
       'queue' => $queue, //the queue object
       'errorMode'=> CRM_Queue_Runner::ERROR_ABORT, //abort upon error and keep task in queue
       'onEnd' => array('CRM_Avg_Page_BatchAnonymizer', 'onEnd'), //method which is called as soon as the queue is finished
