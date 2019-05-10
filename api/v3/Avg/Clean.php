@@ -23,9 +23,9 @@ function _civicrm_api3_avg_clean_spec(&$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_avg_clean($params) {
-    //Set time limit to 0, otherwise execution is stopped after 30 seconds
-    set_time_limit(0);
-
+    //Set time limit to 1800, otherwise execution is stopped after 30 seconds
+    set_time_limit(1800); //Run max half an hour
+    $returnValues = array();
     $params_expertStatusField = array(
       'version' => 3,
       'sequential' => 1,
@@ -73,51 +73,49 @@ function civicrm_api3_avg_clean($params) {
     ));
 
     while($query_result->fetch()){
-      if(!empty($query_result->contact_id)) {
-        $task = new CRM_Queue_Task(
-          array('CRM_Avg_Page_BatchAnonymizer', 'Anonymize'), //call back method
-          array($query_result->contact_id,array(
-            'block_useraccount' => 'yes',
-            'remove_drupalroles' => 'yes',
-            'remove_name' => 'no',
-            'remove_namefromcasetitles' => 'no',
-            'remove_personaldata' => 'no',
-            'remove_additionaldata' => 'yes',
-            'remove_jobtitle' => 'no',
-            'remove_passportinformation' => 'yes',
-            'remove_incaseofemergency' => 'yes',
-            'remove_bankinformation' => 'yes',
-            'remove_nationality' => 'yes',
-            'remove_medical' => 'yes',
-            'remove_flight' => 'yes',
-            'remove_expertdata' => 'yes',
-            'remove_gender' => 'no',
-            'remove_addresses' => 'no',
-            'remove_mailaddresses' => 'no',
-            'remove_phonenumbers' => 'no',
-            'remove_workhistory' => 'yes',
-            'remove_education' => 'yes',
-            'remove_languages' => 'yes',
-            'remove_groups' => 'yes',
-            'remove_contactsegments' => 'yes',
-            'remove_documents' => 'yes',
-            'clean' => 'yes', //extra parameter for anonymize or clean
-          ))
-        );
-
-        //now add this task to the queue
-        $queue->createItem($task);
-        $users[] = $query_result->contact_id;
-      }
+      $users[] = $query_result->contact_id;
     }
 
-    CRM_Core_Error::debug_log_message('Contact IDs to process for AVG Cleanup: '.print_r($users,TRUE));
+    if(!empty($users)) {
+      $task = new CRM_Queue_Task(
+        array('CRM_Avg_Page_BatchAnonymizer', 'Anonymize'), //call back method
+        array($users,array(
+          'block_useraccount' => 'yes',
+          'remove_drupalroles' => 'yes',
+          'remove_name' => 'no',
+          'remove_namefromcasetitles' => 'no',
+          'remove_personaldata' => 'no',
+          'remove_additionaldata' => 'yes',
+          'remove_jobtitle' => 'no',
+          'remove_passportinformation' => 'yes',
+          'remove_incaseofemergency' => 'yes',
+          'remove_bankinformation' => 'yes',
+          'remove_nationality' => 'yes',
+          'remove_medical' => 'yes',
+          'remove_flight' => 'yes',
+          'remove_expertdata' => 'yes',
+          'remove_addresses' => 'no',
+          'remove_mailaddresses' => 'no',
+          'remove_phonenumbers' => 'no',
+          'remove_workhistory' => 'yes',
+          'remove_education' => 'yes',
+          'remove_languages' => 'yes',
+          'remove_groups' => 'yes',
+          'remove_contactsegments' => 'yes',
+          'remove_documents' => 'yes',
+          'clean' => 'yes', //extra parameter for anonymize or clean
+        ))
+      );
+
+      //now add this task to the queue
+      $queue->createItem($task);
+    }
 
     $runner = new CRM_Queue_Runner(array(
       'title' => ts('nl.pum.avg: Clean inactive users queue runner'), //title fo the queue
       'queue' => $queue, //the queue object
-      'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE, //continue on error otherwise the queue will hang
-      'onEnd' => array('CRM_Avg_Utils', 'batchFinishedExecutionMessage'),
+      'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE,
+      'onEnd' => array('CRM_Avg_Page_BatchAnonymizer', 'onEnd'),
       'onEndUrl' => CRM_Utils_System::url('civicrm', 'reset=1'),
     ));
 

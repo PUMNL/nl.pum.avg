@@ -137,7 +137,6 @@ class CRM_Avg_Form_Report_CleanInactiveUsers extends CRM_Report_Form {
                   'remove_medical' => 'yes',
                   'remove_flight' => 'yes',
                   'remove_expertdata' => 'yes',
-                  'remove_gender' => 'no',
                   'remove_addresses' => 'no',
                   'remove_mailaddresses' => 'no',
                   'remove_phonenumbers' => 'no',

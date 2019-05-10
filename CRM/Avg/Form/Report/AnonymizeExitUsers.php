@@ -137,7 +137,6 @@ class CRM_Avg_Form_Report_AnonymizeExitUsers extends CRM_Report_Form {
                   'remove_medical' => 'yes',
                   'remove_flight' => 'yes',
                   'remove_expertdata' => 'yes',
-                  'remove_gender' => 'yes',
                   'remove_addresses' => 'yes',
                   'remove_mailaddresses' => 'yes',
                   'remove_phonenumbers' => 'yes',

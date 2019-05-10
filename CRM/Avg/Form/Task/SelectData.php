@@ -105,13 +105,6 @@ class CRM_Avg_Form_Task_SelectData extends CRM_Contact_Form_Task {
     );
     $this->addElement(
       'select', // field type
-      'remove_gender', // field name
-      'Gender', // field label
-      self::getYesNoOptions(), // list of options
-      FALSE // is required
-    );
-    $this->addElement(
-      'select', // field type
       'remove_addresses', // field name
       'Addresses', // field label
       self::getYesNoOptions(), // list of options

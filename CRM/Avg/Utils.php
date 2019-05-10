@@ -41,7 +41,8 @@ class CRM_Avg_Utils {
                           'id' => $this->cid,
                           'birth_date' => '',
                           'image_URL' => '',
-                          'source' => 'Anonymized');
+                          'source' => 'Anonymized',
+                          'gender_id' => '');
           $results[] = civicrm_api('Contact','update',$params);
         } catch (CiviCRM_API3_Exception $e) {
 
@@ -56,30 +57,40 @@ class CRM_Avg_Utils {
 
     if(is_numeric($this->cid)) {
       //Get fields
-      $field_group_params = array(
-        'version' => 3,
-        'sequential' => 1,
-        'title' => 'Additional Data',
-        'return' => 'id',
-      );
-      $field_group = civicrm_api('CustomGroup', 'getvalue', $field_group_params);
+      $grp_id = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_custom_group WHERE title = 'Additional Data'");
+      if (!empty($grp_id)){
+        $field_group_fields_params = array(
+          'version' => 3,
+          'sequential' => 1,
+          'custom_group_id' => $grp_id,
+        );
 
-      $field_group_fields_params = array(
-        'version' => 3,
-        'sequential' => 1,
-        'custom_group_id' => $field_group,
-      );
-      $field_group_fields = civicrm_api('CustomField', 'get', $field_group_fields_params);
+        try {
+          $field_group_fields = civicrm_api('CustomField', 'get', $field_group_fields_params);
+        } catch (CiviCRM_API3_Exception $e) {
 
-      //Clear some of the custom fields
-      foreach($field_group_fields['values'] as $key => $value) {
-        if(in_array($value['label'], array('Registration Date','Initials','City of Birth','Country of Birth','Marital Status','Skype Name','Facebook Address','Twitter account name'))) {
-          $params = array('version' => 3,
-                        'sequential' => 1,
-                        'id' => $this->cid,
-                        'custom_'.$value['id'] => '');
-          $results[] = civicrm_api('Contact','update',$params);
         }
+      }
+
+      $params = array(
+        'version' => 3,
+        'sequential' => 1,
+        'id' => $this->cid
+      );
+
+      if(!empty($field_group_fields['values']) && is_array($field_group_fields['values'])){
+        //Clear some of the custom fields
+        foreach($field_group_fields['values'] as $key => $value) {
+          if(in_array($value['label'], array('Registration Date','Initials','City of Birth','Country of Birth','Marital Status','Skype Name','Facebook Address','Twitter account name'))) {
+            $params['custom_'.$value['id']] = '';
+          }
+        }
+      }
+CRM_Core_Error::debug_log_message(print_r($params,TRUE), 'params for cid: '.$this->cid);
+      try {
+        $results = civicrm_api('Contact','update',$params);
+      } catch (CiviCRM_API3_Exception $e) {
+
       }
     }
 
@@ -101,22 +112,31 @@ class CRM_Avg_Utils {
         'sequential' => 1,
         'contact_id' => $this->cid,
       );
-      $result = civicrm_api('UFMatch', 'get', $params);
 
-      foreach($result['values'] as $key => $value){
-        //Load drupal user
-        $users = entity_load('user', array($value['uf_id']));
+      try {
+        $result = civicrm_api('UFMatch', 'get', $params);
+      } catch (CiviCRM_API3_Exception $e) {
 
-        foreach ($users as $uid => $user) {
-          //Block account
-          $user->status = 0;
-          $user->name = 'anonymous_'.date('Ymd').rand();
-          //Set e-mail frequency to never
-          if(isset($user->field_email_frequency['und'][0]['value'])) {
-            $user->field_email_frequency['und'][0]['value'] = '+10 years';
+      }
+
+      if(!empty($result['values']) && is_array($result['values'])){
+        foreach($result['values'] as $key => $value){
+          //Load drupal user
+          if(!empty($value['uf_id'])){
+            $users = entity_load('user', array($value['uf_id']));
+
+            foreach ($users as $uid => $user) {
+              //Block account
+              $user->status = 0;
+              $user->name = 'anonymous_'.date('Ymd').rand();
+              //Set e-mail frequency to never
+              if(isset($user->field_email_frequency['und'][0]['value'])) {
+                $user->field_email_frequency['und'][0]['value'] = '+10 years';
+              }
+
+              user_save($user);
+            }
           }
-
-          user_save($user);
         }
       }
     }
@@ -137,15 +157,22 @@ class CRM_Avg_Utils {
         'sequential' => 1,
         'contact_id' => $this->cid,
       );
-      $result = civicrm_api('UFMatch', 'get', $params);
 
-      foreach($result['values'] as $key => $value){
-        //Load drupal user
-        $uid = $value['uf_id'];
-        $user = user_load($uid);
-        //Remove drupal roles
-        $user->roles = array();
-        user_save($user);
+      try {
+        $result = civicrm_api('UFMatch', 'get', $params);
+      } catch (CiviCRM_API3_Exception $e) {
+
+      }
+
+      if(!empty($result['values']) && is_array($result['values'])){
+        foreach($result['values'] as $key => $value){
+          //Load drupal user
+          $uid = $value['uf_id'];
+          $user = user_load($uid);
+          //Remove drupal roles
+          $user->roles = array();
+          user_save($user);
+        }
       }
     }
   }
@@ -166,7 +193,12 @@ class CRM_Avg_Utils {
         'id' => $this->cid,
         'job_title' => '',
       );
-      $result = civicrm_api('Contact', 'update', $params);
+
+      try {
+        $result = civicrm_api('Contact', 'update', $params);
+      } catch (CiviCRM_API3_Exception $e) {
+
+      }
     }
   }
 
@@ -189,7 +221,12 @@ class CRM_Avg_Utils {
         'last_name' => 'anonymous_'.date('Ymd'),
         'prefix_id' => '',
       );
-      $result = civicrm_api('Contact', 'update', $params);
+
+      try {
+        $result = civicrm_api('Contact', 'update', $params);
+      } catch (CiviCRM_API3_Exception $e) {
+
+      }
     }
   }
 
@@ -202,47 +239,61 @@ class CRM_Avg_Utils {
    */
   public function removeNameFromCaseTitles() {
     if(is_numeric($this->cid)) {
-      $params_contact = array(
-        'version' => 3,
-        'sequential' => 1,
-        'id' => $this->cid,
-      );
-      $contact = civicrm_api('Contact', 'getsingle', $params_contact);
-
-      $params_cases = array(
-        'version' => 3,
-        'sequential' => 1,
-        'contact_id' => $this->cid,
-      );
-      $cases = civicrm_api('Case', 'get', $params_cases);
-
-      if(!empty($contact['display_name']) && is_array($cases['values']) && $cases['count'] > 0){
-        $params_casetype_travelcase = array(
+      try {
+        $params_contact = array(
           'version' => 3,
           'sequential' => 1,
-          'option_group_name' => 'case_type',
-          'name' => 'TravelCase',
-          'return' => 'label,id',
+          'id' => $this->cid,
         );
-        $casetype_travelcase_label = civicrm_api('OptionValue', 'get', $params_casetype_travelcase);
+        $contact = civicrm_api('Contact', 'getsingle', $params_contact);
+      } catch (CiviCRM_API3_Exception $e) {
 
-        foreach($cases['values'] as $key => $value) {
-          $params_current_case = array(
+      }
+
+      try {
+        $params_cases = array(
+          'version' => 3,
+          'sequential' => 1,
+          'contact_id' => $this->cid,
+        );
+        $cases = civicrm_api('Case', 'get', $params_cases);
+      } catch (CiviCRM_API3_Exception $e) {
+
+      }
+
+      if(!empty($contact['display_name']) && is_array($cases['values']) && $cases['count'] > 0){
+        try {
+          $params_casetype_travelcase = array(
             'version' => 3,
             'sequential' => 1,
-            'contact_id' => $this->cid,
-            'id' => $value['id'],
+            'option_group_name' => 'case_type',
+            'name' => 'TravelCase',
+            'return' => 'label,id',
           );
-          $current_case = civicrm_api('Case', 'get', $params_current_case);
+          $casetype_travelcase_label = civicrm_api('OptionValue', 'get', $params_casetype_travelcase);
 
-          $params_update_current_case = array(
-            'version' => 3,
-            'sequential' => 1,
-            'case_type_id' => $current_case['values'][0]['case_type_id'],
-            'id' => $current_case['values'][0]['id'],
-            'subject' => $contact['display_name'].'-'.$casetype_travelcase_label['values'][0]['label'].'-'.$current_case['values'][0]['id']
-          );
-          $update_current_case = civicrm_api('Case', 'update', $params_update_current_case);
+          if (!empty($cases['values']) && is_array($cases['values'])){
+            foreach($cases['values'] as $key => $value) {
+              $params_current_case = array(
+                'version' => 3,
+                'sequential' => 1,
+                'contact_id' => $this->cid,
+                'id' => $value['id'],
+              );
+              $current_case = civicrm_api('Case', 'get', $params_current_case);
+
+              $params_update_current_case = array(
+                'version' => 3,
+                'sequential' => 1,
+                'case_type_id' => $current_case['values'][0]['case_type_id'],
+                'id' => $current_case['values'][0]['id'],
+                'subject' => $contact['display_name'].'-'.$casetype_travelcase_label['values'][0]['label'].'-'.$current_case['values'][0]['id']
+              );
+              $update_current_case = civicrm_api('Case', 'update', $params_update_current_case);
+            }
+          }
+        } catch (CiviCRM_API3_Exception $e) {
+
         }
       }
     }
@@ -259,39 +310,40 @@ class CRM_Avg_Utils {
    *
    * Function to remove all data of the custom groups of a contact
    *
-   * @param mixed $custom_group_name
+   * @param mixed $custom_group_names
+   *  Array of custom_groups, use following format:
+   *    array(
+   *      'Passport Information'          => 'yes',
+   *      'In Case of Emergency Contact'  => 'no',
+   *      'Bank Information'              => 'yes',
+   *      'Nationality'                   => 'no',
+   *      'Medical Information'           => 'yes',
+   *      'Flight information'            => 'yes'
+   *    )
    * @return void
    */
-  public function removeCustomGroupDataOfContact($custom_group_name) {
+  public function removeCustomGroupDataOfContact($custom_group_names) {
     if(is_numeric($this->cid)) {
-      //Get custom field id
-      try {
-        $field_group_params = array(
-          'version' => 3,
-          'sequential' => 1,
-          'title' => $custom_group_name,
-          'return' => 'id',
-        );
-        $field_group = civicrm_api('CustomGroup', 'getvalue', $field_group_params);
+      $groups = array();
 
-        $field_group_fields_params = array(
-          'version' => 3,
-          'sequential' => 1,
-          'custom_group_id' => $field_group,
-        );
-        $field_group_fields = civicrm_api('CustomField', 'get', $field_group_fields_params);
+      $params = array(
+        'version' => 3,
+        'sequential' => 1,
+        'id' => $this->cid
+      );
 
-        //Clear custom field information
-        foreach($field_group_fields['values'] as $key => $value) {
-          $params = array('version' => 3,
-                          'sequential' => 1,
-                          'id' => $this->cid,
-                          'custom_'.$value['id'] => '');
-          $result = civicrm_api('Contact','update',$params);
+      foreach($custom_group_names as $group_name => $remove) {
+        if($remove == 'yes') {
+          $grp_id = CRM_Core_DAO::singleValueQuery("SELECT `id` FROM `civicrm_custom_group` WHERE `title` = %1 LIMIT 1", array(1 => array($group_name, 'String')));
+          $dao_field_ids = CRM_Core_DAO::executeQuery("SELECT `id` FROM `civicrm_custom_field` WHERE `custom_group_id` = %1", array(1 => array($grp_id, 'String')));
+
+          while($dao_field_ids->fetch()){
+            $params['custom_'.$dao_field_ids->id] = '';
+          }
         }
-      } catch (CiviCRM_API3_Exception $e) {
-
       }
+
+      $result = civicrm_api('Contact','update',$params);
     }
   }
 
@@ -327,24 +379,6 @@ class CRM_Avg_Utils {
   }
 
   /**
-   * CRM_Avg_Form_AnonymizeUser::removeGender()
-   *
-   * Function to remove the gender from a contact
-   *
-   * @return void
-   */
-  public function removeGender() {
-    if(is_numeric($this->cid)) {
-      //Clear Demographics: Gender
-      $params = array('version' => 3,
-                      'sequential' => 1,
-                      'id' => $this->cid,
-                      'gender_id' => '');
-      $result = civicrm_api('Contact','update',$params);
-    }
-  }
-
-  /**
    * CRM_Avg_Form_AnonymizeUser::removeAddresses()
    *
    * Function to remove all addresses from a contact
@@ -354,25 +388,29 @@ class CRM_Avg_Utils {
   public function removeAddresses() {
     //Get all addresses of contact
     if(is_numeric($this->cid)) {
-      $params = array(
-        'version' => 3,
-        'sequential' => 1,
-        'contact_id' => $this->cid,
-      );
-      $addresses = civicrm_api('Address', 'get', $params);
+      try {
+        $params = array(
+          'version' => 3,
+          'sequential' => 1,
+          'contact_id' => $this->cid,
+        );
+        $addresses = civicrm_api('Address', 'get', $params);
 
-      if(!empty($addresses['values']) && is_array($addresses['values'])) {
-        //Remove all addresses of contact
-        foreach($addresses['values'] as $key => $value) {
-          if(!empty($value['id'])){
-            $params = array(
-              'version' => 3,
-              'sequential' => 1,
-              'id' => $value['id'],
-            );
-            $result = civicrm_api('Address', 'delete', $params);
+        if(!empty($addresses['values']) && is_array($addresses['values'])) {
+          //Remove all addresses of contact
+          foreach($addresses['values'] as $key => $value) {
+            if(!empty($value['id'])){
+              $params = array(
+                'version' => 3,
+                'sequential' => 1,
+                'id' => $value['id'],
+              );
+              $result = civicrm_api('Address', 'delete', $params);
+            }
           }
         }
+      } catch (CiviCRM_API3_Exception $e) {
+
       }
     }
   }
@@ -386,27 +424,31 @@ class CRM_Avg_Utils {
    */
   public function removePhoneNumbers() {
     //Get all phone numbers of contact
-    if(is_numeric($this->cid)) {
-      $params = array(
-        'version' => 3,
-        'sequential' => 1,
-        'contact_id' => $this->cid,
-      );
-      $phone_numbers = civicrm_api('Phone', 'get', $params);
-    }
+    try {
+      if(is_numeric($this->cid)) {
+        $params = array(
+          'version' => 3,
+          'sequential' => 1,
+          'contact_id' => $this->cid,
+        );
+        $phone_numbers = civicrm_api('Phone', 'get', $params);
+      }
 
-    if(!empty($phone_numbers['values']) && is_array($phone_numbers['values'])) {
-      //Remove all phone numbers of contact
-      foreach($phone_numbers['values'] as $key => $value) {
-        if(!empty($value['id'])){
-          $params = array(
-            'version' => 3,
-            'sequential' => 1,
-            'id' => $value['id'],
-          );
-          $result = civicrm_api('Phone', 'delete', $params);
+      if(!empty($phone_numbers['values']) && is_array($phone_numbers['values'])) {
+        //Remove all phone numbers of contact
+        foreach($phone_numbers['values'] as $key => $value) {
+          if(!empty($value['id'])){
+            $params = array(
+              'version' => 3,
+              'sequential' => 1,
+              'id' => $value['id'],
+            );
+            $result = civicrm_api('Phone', 'delete', $params);
+          }
         }
       }
+    } catch (CiviCRM_API3_Exception $e) {
+
     }
   }
 
@@ -420,13 +462,16 @@ class CRM_Avg_Utils {
   public function removeMailAddresses() {
     //Get all mail addresses of contact
     if(is_numeric($this->cid)) {
-      $params = array(
-        'version' => 3,
-        'sequential' => 1,
-        'contact_id' => $this->cid,
-      );
-      $mail_addresses = civicrm_api('Email', 'get', $params);
+      try {
+        $params = array(
+          'version' => 3,
+          'sequential' => 1,
+          'contact_id' => $this->cid,
+        );
+        $mail_addresses = civicrm_api('Email', 'get', $params);
+      } catch (CiviCRM_API3_Exception $e) {
 
+      }
 
       if(!empty($mail_addresses['values']) && is_array($mail_addresses['values'])) {
         //Remove all mail addresses of contact from contact card
@@ -437,7 +482,11 @@ class CRM_Avg_Utils {
               'sequential' => 1,
               'id' => $value['id'],
             );
-            $result = civicrm_api('Email', 'delete', $params);
+            try {
+              $result = civicrm_api('Email', 'delete', $params);
+            } catch (CiviCRM_API3_Exception $e) {
+
+            }
           }
         }
       }
@@ -448,15 +497,21 @@ class CRM_Avg_Utils {
         'sequential' => 1,
         'contact_id' => $this->cid,
       );
-      $result = civicrm_api('UFMatch', 'get', $params);
+      try {
+        $result = civicrm_api('UFMatch', 'get', $params);
+      } catch (CiviCRM_API3_Exception $e) {
 
-      foreach($result['values'] as $key => $value){
-        //Load drupal user
-        $users = entity_load('user', array($value['uf_id']));
+      }
 
-        foreach ($users as $uid => $user) {
-          $user->mail = $user->name.'@domain.example';
-          user_save($user);
+      if(!empty($result['values']) && is_array($result['values'])){
+        foreach($result['values'] as $key => $value){
+          //Load drupal user
+          $users = entity_load('user', array($value['uf_id']));
+
+          foreach ($users as $uid => $user) {
+            $user->mail = $user->name.'@domain.example';
+            user_save($user);
+          }
         }
       }
     }
@@ -623,7 +678,7 @@ class CRM_Avg_Utils {
       }
 
       //Remove all contact segments of contact
-      if(is_array($contact_segments['values'])){
+      if(!empty($contact_segments['values']) && is_array($contact_segments['values'])){
         foreach($contact_segments['values'] as $key => $value) {
           if(!empty($value['id'])) {
             //$params = array(
@@ -671,7 +726,7 @@ class CRM_Avg_Utils {
         $localExtensions = civicrm_api('Extension', 'get', array('version' => 3, 'sequential' => 1));
 
         $extensionInstalled = FALSE;
-        if(is_array($localExtensions['values'])) {
+        if(!empty($localExtensions['values']) && is_array($localExtensions['values'])) {
           foreach($localExtensions['values'] as $key => $value) {
             if ($value['key'] == 'org.civicoop.documents' && $value['status'] == 'installed') {
               $extensionInstalled = TRUE;
@@ -776,7 +831,7 @@ class CRM_Avg_Utils {
     }
   }
 
-  public function batchFinishedExecutionMessage(){
+  public static function batchFinishedExecutionMessage(){
     CRM_Core_Session::setStatus('All tasks in queue have been executed successfully', 'AVG', 'success');
   }
 }

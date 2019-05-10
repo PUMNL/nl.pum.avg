@@ -138,13 +138,6 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
       );
       $this->add(
         'select',
-        'remove_gender',
-        'Gender',
-        $this->getYesNoOptions(),
-        FALSE
-      );
-      $this->add(
-        'select',
         'remove_addresses',
         'Addresses',
         $this->getYesNoOptions(),
@@ -267,29 +260,18 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
     if(!empty($values['remove_jobtitle']) && $values['remove_jobtitle'] == 'yes') {
       $AvgUtils->removeJobTitle();
     }
-    if(!empty($values['remove_passportinformation']) && $values['remove_passportinformation'] == 'yes') {
-      $AvgUtils->removeCustomGroupDataOfContact('Passport Information');
-    }
-    if(!empty($values['remove_incaseofemergency']) && $values['remove_incaseofemergency'] == 'yes') {
-      $AvgUtils->removeCustomGroupDataOfContact('In Case of Emergency Contact');
-    }
-    if(!empty($values['remove_bankinformation']) && $values['remove_bankinformation'] == 'yes') {
-      $AvgUtils->removeCustomGroupDataOfContact('Bank Information');
-    }
-    if(!empty($values['remove_nationality']) && $values['remove_nationality'] == 'yes') {
-      $AvgUtils->removeCustomGroupDataOfContact('Nationality');
-    }
-    if(!empty($values['remove_medical']) && $values['remove_medical'] == 'yes') {
-      $AvgUtils->removeCustomGroupDataOfContact('Medical Information');
-    }
-    if(!empty($values['remove_flight']) && $values['remove_flight'] == 'yes') {
-      $AvgUtils->removeCustomGroupDataOfContact('Flight information');
-    }
+    $AvgUtils->removeCustomGroupDataOfContact(
+      array(
+        'Passport Information' => $values['remove_passportinformation'],
+        'In Case of Emergency Contact' => $values['remove_incaseofemergency'],
+        'Bank Information' => $values['remove_bankinformation'],
+        'Nationality' => $values['remove_nationality'],
+        'Medical Information' => $values['remove_medical'],
+        'Flight information' => $values['remove_flight']
+      )
+    );
     if(!empty($values['remove_expertdata']) && $values['remove_expertdata'] == 'yes') {
       $AvgUtils->removeExpertData();
-    }
-    if(!empty($values['remove_gender']) && $values['remove_gender'] == 'yes') {
-      $AvgUtils->removeGender();
     }
     if(!empty($values['remove_addresses']) && $values['remove_addresses'] == 'yes') {
       $AvgUtils->removeAddresses();
@@ -309,7 +291,7 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
     if(!empty($values['remove_languages']) && $values['remove_languages'] == 'yes') {
       $AvgUtils->removeLanguages();
     }
-    if(!empty($values['remove_groups']) && $values['remove_languages'] == 'yes') {
+    if(!empty($values['remove_groups']) && $values['remove_groups'] == 'yes') {
       $AvgUtils->removeFromGroups();
     }
     if(!empty($values['remove_contactsegments']) && $values['remove_contactsegments'] == 'yes') {
@@ -338,7 +320,6 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
                                   .'&md='.$values['remove_medical']
                                   .'&fl='.$values['remove_flight']
                                   .'&ed='.$values['remove_expertdata']
-                                  .'&rg='.$values['remove_gender']
                                   .'&ad='.$values['remove_addresses']
                                   .'&ma='.$values['remove_mailaddresses']
                                   .'&pn='.$values['remove_phonenumbers']

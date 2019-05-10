@@ -103,12 +103,6 @@ class CRM_Avg_Page_AnonymizeResult extends CRM_Core_Page {
       $this->assign('ed', 'Expert data removed: no');
     }
 
-    if(!empty($_GET['rg']) && ($_GET['rg'] == 'yes' | $_GET['rg'] == 'no')) {
-      $this->assign('rg', 'Gender removed: '.$_GET['rg']);
-    } else {
-      $this->assign('rg', 'Gender removed: no');
-    }
-
     if(!empty($_GET['ad']) && ($_GET['ad'] == 'yes' | $_GET['ad'] == 'no')) {
       $this->assign('ad', 'Addresses removed: '.$_GET['ad']);
     } else {
