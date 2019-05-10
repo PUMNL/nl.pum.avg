@@ -73,7 +73,9 @@ function civicrm_api3_avg_clean($params) {
     ));
 
     while($query_result->fetch()){
-      $users[] = $query_result->contact_id;
+      if(!empty($query_result->contact_id)){
+        $users[] = $query_result->contact_id;
+      }
     }
 
     if(!empty($users)) {

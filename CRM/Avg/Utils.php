@@ -20,6 +20,8 @@ class CRM_Avg_Utils {
     } else {
       $this->cid = $cid;
     }
+
+    set_time_limit(1800); //Run max half an hour
   }
 
   /**
@@ -86,7 +88,7 @@ class CRM_Avg_Utils {
           }
         }
       }
-CRM_Core_Error::debug_log_message(print_r($params,TRUE), 'params for cid: '.$this->cid);
+
       try {
         $results = civicrm_api('Contact','update',$params);
       } catch (CiviCRM_API3_Exception $e) {

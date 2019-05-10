@@ -66,94 +66,99 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
   }
 
   public static function cleanUser($cid, $values) {
-    $AvgUtils = new CRM_Avg_Utils($cid);
+    try{
+      $AvgUtils = new CRM_Avg_Utils($cid);
 
-    if(!empty($values['block_useraccount']) && $values['block_useraccount'] == 'yes') {
-      $AvgUtils->blockUserAccount();
+      if(!empty($values['block_useraccount']) && $values['block_useraccount'] == 'yes') {
+        $AvgUtils->blockUserAccount();
+      }
+
+      if(!empty($values['remove_drupalroles']) && $values['remove_drupalroles'] == 'yes') {
+        $AvgUtils->removeDrupalRolesOfUser();
+      }
+
+      if(!empty($values['remove_name']) && $values['remove_name'] == 'yes') {
+        $AvgUtils->removeName();
+      }
+
+      if(!empty($values['remove_namefromcasetitles']) && $values['remove_namefromcasetitles'] == 'yes') {
+        $AvgUtils->removeNameFromCaseTitles();
+      }
+
+      if(!empty($values['remove_personaldata']) && $values['remove_personaldata'] == 'yes') {
+        $AvgUtils->removePersonalData();
+      }
+
+      if(!empty($values['remove_additionaldata']) && $values['remove_additionaldata'] == 'yes') {
+        $AvgUtils->removeAdditionalData();
+      }
+
+      if(!empty($values['remove_jobtitle']) && $values['remove_jobtitle'] == 'yes') {
+        $AvgUtils->removeJobTitle();
+      }
+
+      $AvgUtils->removeCustomGroupDataOfContact(
+        array(
+          'Passport Information' => $values['remove_passportinformation'],
+          'In Case of Emergency Contact' => $values['remove_incaseofemergency'],
+          'Bank Information' => $values['remove_bankinformation'],
+          'Nationality' => $values['remove_nationality'],
+          'Medical Information' => $values['remove_medical'],
+          'Flight information' => $values['remove_flight']
+        )
+      );
+
+      if(!empty($values['remove_expertdata']) && $values['remove_expertdata'] == 'yes') {
+        $AvgUtils->removeExpertData();
+      }
+
+      if(!empty($values['remove_addresses']) && $values['remove_addresses'] == 'yes') {
+        $AvgUtils->removeAddresses();
+      }
+
+      if(!empty($values['remove_mailaddresses']) && $values['remove_mailaddresses'] == 'yes') {
+        $AvgUtils->removeMailAddresses();
+      }
+
+      if(!empty($values['remove_phonenumbers']) && $values['remove_phonenumbers'] == 'yes') {
+        $AvgUtils->removePhoneNumbers();
+      }
+
+      if(!empty($values['remove_workhistory']) && $values['remove_workhistory'] == 'yes') {
+        $AvgUtils->removeWorkhistory();
+      }
+
+      if(!empty($values['remove_education']) && $values['remove_education'] == 'yes') {
+        $AvgUtils->removeEducation();
+      }
+
+      if(!empty($values['remove_languages']) && $values['remove_languages'] == 'yes') {
+        $AvgUtils->removeLanguages();
+      }
+
+      if(!empty($values['remove_groups']) && $values['remove_groups'] == 'yes') {
+        $AvgUtils->removeFromGroups();
+      }
+
+      if(!empty($values['remove_contactsegments']) && $values['remove_contactsegments'] == 'yes') {
+        $AvgUtils->removeContactSegments();
+      }
+
+      if(!empty($values['remove_documents']) && $values['remove_documents'] == 'yes') {
+        $AvgUtils->removeDocuments();
+      }
+
+      //Extra parameter for in batch
+      if(!empty($values['anonymize']) && $values['anonymize'] == 'yes') {
+        $AvgUtils->addUserToAnonymizedUsers();
+      }
+
+      if(!empty($values['clean']) && $values['clean'] == 'yes') {
+        $AvgUtils->addUserToCleanedInactiveUsers();
+      }
     }
-
-    if(!empty($values['remove_drupalroles']) && $values['remove_drupalroles'] == 'yes') {
-      $AvgUtils->removeDrupalRolesOfUser();
-    }
-
-    if(!empty($values['remove_name']) && $values['remove_name'] == 'yes') {
-      $AvgUtils->removeName();
-    }
-
-    if(!empty($values['remove_namefromcasetitles']) && $values['remove_namefromcasetitles'] == 'yes') {
-      $AvgUtils->removeNameFromCaseTitles();
-    }
-
-    if(!empty($values['remove_personaldata']) && $values['remove_personaldata'] == 'yes') {
-      $AvgUtils->removePersonalData();
-    }
-
-    if(!empty($values['remove_additionaldata']) && $values['remove_additionaldata'] == 'yes') {
-      $AvgUtils->removeAdditionalData();
-    }
-
-    if(!empty($values['remove_jobtitle']) && $values['remove_jobtitle'] == 'yes') {
-      $AvgUtils->removeJobTitle();
-    }
-
-    $AvgUtils->removeCustomGroupDataOfContact(
-      array(
-        'Passport Information' => $values['remove_passportinformation'],
-        'In Case of Emergency Contact' => $values['remove_incaseofemergency'],
-        'Bank Information' => $values['remove_bankinformation'],
-        'Nationality' => $values['remove_nationality'],
-        'Medical Information' => $values['remove_medical'],
-        'Flight information' => $values['remove_flight']
-      )
-    );
-
-    if(!empty($values['remove_expertdata']) && $values['remove_expertdata'] == 'yes') {
-      $AvgUtils->removeExpertData();
-    }
-
-    if(!empty($values['remove_addresses']) && $values['remove_addresses'] == 'yes') {
-      $AvgUtils->removeAddresses();
-    }
-
-    if(!empty($values['remove_mailaddresses']) && $values['remove_mailaddresses'] == 'yes') {
-      $AvgUtils->removeMailAddresses();
-    }
-
-    if(!empty($values['remove_phonenumbers']) && $values['remove_phonenumbers'] == 'yes') {
-      $AvgUtils->removePhoneNumbers();
-    }
-
-    if(!empty($values['remove_workhistory']) && $values['remove_workhistory'] == 'yes') {
-      $AvgUtils->removeWorkhistory();
-    }
-
-    if(!empty($values['remove_education']) && $values['remove_education'] == 'yes') {
-      $AvgUtils->removeEducation();
-    }
-
-    if(!empty($values['remove_languages']) && $values['remove_languages'] == 'yes') {
-      $AvgUtils->removeLanguages();
-    }
-
-    if(!empty($values['remove_groups']) && $values['remove_groups'] == 'yes') {
-      $AvgUtils->removeFromGroups();
-    }
-
-    if(!empty($values['remove_contactsegments']) && $values['remove_contactsegments'] == 'yes') {
-      $AvgUtils->removeContactSegments();
-    }
-
-    if(!empty($values['remove_documents']) && $values['remove_documents'] == 'yes') {
-      $AvgUtils->removeDocuments();
-    }
-
-    //Extra parameter for in batch
-    if(!empty($values['anonymize']) && $values['anonymize'] == 'yes') {
-      $AvgUtils->addUserToAnonymizedUsers();
-    }
-
-    if(!empty($values['clean']) && $values['clean'] == 'yes') {
-      $AvgUtils->addUserToCleanedInactiveUsers();
+    catch (Exception $e) {
+      CRM_Core_Error::debug_log_message($e->getMessage());
     }
   }
 }
