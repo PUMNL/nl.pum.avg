@@ -836,4 +836,73 @@ class CRM_Avg_Utils {
   public static function batchFinishedExecutionMessage(){
     CRM_Core_Session::setStatus('All tasks in queue have been executed successfully', 'AVG', 'success');
   }
+
+  /**
+   * CRM_Avg_Utils::cleanUpQuery()
+   *
+   * Query cleanup of users, seperated in function because it is used in multiple functions
+   * Query canis limited to 100 users on each run, to prevent that the job is taking too much time
+   *
+   * @param int $limit
+   *  Specify a limit for the number of users to clean.
+   *  This will return rows up to the specified limit.
+   *  For example: this is used in batch to limit the number of users each night,
+   *  so the job will not too long if a lot of users needs to be processed.
+   *
+   * @return string $sql
+   *   Returns the query to execute for process in other functions
+   */
+  public static function cleanUpQuery($limit=0){
+    $sql = '';
+
+    try{
+      $params_expertStatusField = array(
+        'version' => 3,
+        'sequential' => 1,
+        'custom_group_name' => 'Expert data',
+        'name' => 'expert_status',
+        'return' => 'column_name',
+      );
+      $expertStatusField = civicrm_api('CustomField', 'getvalue', $params_expertStatusField);
+
+      $params_expertDataTable = array(
+        'version' => 3,
+        'sequential' => 1,
+        'name' => 'expert_data',
+        'return' => 'table_name',
+      );
+      $expertDataTable = civicrm_api('CustomGroup', 'getvalue', $params_expertDataTable);
+
+      $sql = "SELECT DISTINCT gc.contact_id,  con.first_name, con.middle_name, con.last_name, eml.email, ed.{$expertStatusField}
+              FROM civicrm_group_contact gc
+              INNER join
+              (select a.contact_id, a.group_id, a.status, max(a.date) as date ## Get last change date per contact, per group, per status
+              from civicrm_subscription_history a
+              group by a.contact_id, a.group_id, a.status) as sh on gc.group_id = sh.group_id and gc.contact_id = sh.contact_id and gc.status = sh.status
+              LEFT JOIN civicrm_contact con ON con.id = gc.contact_id
+              LEFT JOIN civicrm_email eml ON eml.contact_id = con.id
+              LEFT JOIN {$expertDataTable} ed ON ed.entity_id = con.id
+              WHERE
+              ( ## In group former expert or rejected expert with status Exit
+                ( ed.{$expertStatusField} = 'Exit' and gc.status = 'Added' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Former Expert','Rejected Expert')))
+                OR ## In group Ex-PUM Staff
+                (gc.status = 'Added' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title = 'Ex-PUM Staff'))
+                OR ## Was in group Representatives
+                (gc.status = 'Removed' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title = 'Representatives'))
+              )
+              and sh.date < date_add(now(), interval -9 month) ## Should be added to group at least 9 months ago
+              AND NOT EXISTS ## But not in groups that indicate active users
+              (SELECT DISTINCT gc2.contact_id FROM civicrm_group_contact gc2 WHERE gc.contact_id = gc2.contact_id and gc2.status = 'Added' and gc2.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Cleaned inactive users','Anonymized Users','Active Expert','Staffvolunteers','PUM Staff','Candidate Expert','Representatives')))
+              AND eml.is_primary = '1'
+              ORDER BY gc.contact_id";
+      if(is_int($limit) && $limit > 0){
+        $sql = $sql." LIMIT ".$limit;
+      }
+    } catch (Exception $e) {
+      $sql = '';
+      CRM_Core_Error::debug_log_message($e->getCode()." - ".$e->getMessage(), FALSE);
+    }
+
+    return $sql;
+  }
 }

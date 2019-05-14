@@ -30,7 +30,8 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
     CRM_Core_Session::setStatus('All selected users are anonymized or cleaned. All sensitive data for the selected users has been removed.', 'Queue', 'success');
     CRM_Core_Error::debug_log_message('All selected users are anonymized or cleaned. All sensitive data for the selected users has been removed.');
 
-    CRM_Utils_System::redirect(CRM_Utils_System::url('civicrm', 'reset=1'));
+    $session = CRM_Core_Session::singleton();
+    $session->pushUserContext(CRM_Utils_System::url('civicrm', 'reset=1', true));
   }
 
   /**

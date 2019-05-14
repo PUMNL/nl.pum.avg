@@ -25,7 +25,7 @@ function _civicrm_api3_avg_clean_spec(&$spec) {
 function civicrm_api3_avg_clean($params) {
     //Set time limit to 1800, otherwise execution is stopped after 30 seconds
     set_time_limit(1800); //Run max half an hour
-    $returnValues = array();
+
     $params_expertStatusField = array(
       'version' => 3,
       'sequential' => 1,
@@ -44,36 +44,11 @@ function civicrm_api3_avg_clean($params) {
     $expertDataTable = civicrm_api('CustomGroup', 'getvalue', $params_expertDataTable);
 
     //Query is limited to 100 users on each run, to prevent that the job is taking too much time
-    $sql = "SELECT DISTINCT gc.contact_id, gc.status, con.first_name, con.middle_name, con.last_name, eml.email, ed.{$expertStatusField}
-            FROM civicrm_group_contact gc
-            LEFT JOIN civicrm_subscription_history sh on gc.group_id = sh.group_id and gc.contact_id = sh.contact_id and gc.status = sh.status
-            LEFT JOIN civicrm_contact con ON con.id = gc.contact_id
-            LEFT JOIN civicrm_email eml ON eml.contact_id = con.id
-            LEFT JOIN {$expertDataTable} ed ON ed.entity_id = con.id
-            WHERE
-            ( -- In group former expert or rejected expert with status Exit
-            ( ed.{$expertStatusField} = 'Exit' and gc.status = 'Added' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Former Expert','Rejected Expert')))
-            OR -- In group Ex-PUM Staff
-            (gc.status = 'Added' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title = 'Ex-PUM Staff'))
-            OR -- Was in group Representatives
-            (gc.status = 'Removed' and gc.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title = 'Representatives'))
-            )
-            AND sh.date < date_add(now(), interval -9 month) -- Should be added to group at least 9 months ago
-            AND NOT EXISTS -- But not in groups that indicate active users
-            (SELECT DISTINCT gc2.contact_id FROM civicrm_group_contact gc2 WHERE gc.contact_id = gc2.contact_id and gc2.status = 'Added' and gc2.group_id IN (SELECT id FROM civicrm_group grp WHERE grp.title IN ('Cleaned Inactive Users','Anonymized Users','Active Expert','Staffvolunteers','PUM Staff','Candidate Expert')))
-            AND eml.is_primary = '1'
-            ORDER BY gc.contact_id
-            LIMIT 100";
+    $sql = CRM_Avg_Utils::cleanUpQuery(100);
 
     $query_result = CRM_Core_DAO::executeQuery($sql);
 
     $users = array();
-
-    $queue = CRM_Queue_Service::singleton()->create(array(
-      'type' => 'Sql',
-      'name' => 'nl.pum.avg',
-      'reset' => false, //do not flush queue upon creation
-    ));
 
     while($query_result->fetch()){
       if(!empty($query_result->contact_id)){
@@ -82,6 +57,12 @@ function civicrm_api3_avg_clean($params) {
     }
 
     if(!empty($users)) {
+      $queue = CRM_Queue_Service::singleton()->create(array(
+        'type' => 'Sql',
+        'name' => 'nl.pum.avg',
+        'reset' => false, //do not flush queue upon creation
+      ));
+
       $task = new CRM_Queue_Task(
         array('CRM_Avg_Page_BatchAnonymizer', 'Anonymize'), //call back method
         array($users,array(
@@ -114,17 +95,17 @@ function civicrm_api3_avg_clean($params) {
 
       //now add this task to the queue
       $queue->createItem($task);
+
+      $runner = new CRM_Queue_Runner(array(
+        'title' => ts('nl.pum.avg: Clean inactive users queue runner'), //title fo the queue
+        'queue' => $queue, //the queue object
+        'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE,
+        'onEnd' => array('CRM_Avg_Page_BatchAnonymizer', 'onEnd'),
+        'onEndUrl' => CRM_Utils_System::url('civicrm', 'reset=1'),
+      ));
+
+      $runner->runAllViaWeb();
     }
 
-    $runner = new CRM_Queue_Runner(array(
-      'title' => ts('nl.pum.avg: Clean inactive users queue runner'), //title fo the queue
-      'queue' => $queue, //the queue object
-      'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE,
-      'onEnd' => array('CRM_Avg_Page_BatchAnonymizer', 'onEnd'),
-      'onEndUrl' => CRM_Utils_System::url('civicrm', 'reset=1'),
-    ));
-
-    $runner->runAllViaWeb();
-
-    return civicrm_api3_create_success($returnValues, $params, 'Avg', 'Clean');
+    return civicrm_api3_create_success($users, $params, 'Avg', 'Clean');
 }
