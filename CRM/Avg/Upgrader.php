@@ -31,6 +31,8 @@ class CRM_Avg_Upgrader extends CRM_Avg_Upgrader_Base {
       $result = civicrm_api('Group', 'create', $params);
     }
 
+    CRM_Avg_Upgrader::upgrade_1001(FALSE);
+
     return TRUE;
   }
 
