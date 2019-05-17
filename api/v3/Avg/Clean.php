@@ -23,6 +23,8 @@ function _civicrm_api3_avg_clean_spec(&$spec) {
  * @throws API_Exception
  */
 function civicrm_api3_avg_clean($params) {
+    $returnValues = array();
+
     //Set time limit to 1800, otherwise execution is stopped after 30 seconds
     set_time_limit(1800); //Run max half an hour
 
@@ -56,11 +58,15 @@ function civicrm_api3_avg_clean($params) {
       }
     }
 
+    $returnValues['is_error'] = 0;
+    $returnValues['users_count'] = count($users);
+    $returnValues['values'] = $users;
+
     if(!empty($users)) {
       $queue = CRM_Queue_Service::singleton()->create(array(
         'type' => 'Sql',
         'name' => 'nl.pum.avg',
-        'reset' => false, //do not flush queue upon creation
+        'reset' => true, //Flush queue upon creation
       ));
 
       $task = new CRM_Queue_Task(
@@ -107,5 +113,5 @@ function civicrm_api3_avg_clean($params) {
       $runner->runAllViaWeb();
     }
 
-    return civicrm_api3_create_success($users, $params, 'Avg', 'Clean');
+    return civicrm_api3_create_success($returnValues, $params, 'Avg', 'Clean');
 }

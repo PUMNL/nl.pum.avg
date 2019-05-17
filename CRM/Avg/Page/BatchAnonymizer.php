@@ -25,13 +25,24 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
   /**
    * Handle the final step of the queue
    */
-  static function onEnd(CRM_Queue_TaskContext $ctx) {
+  public static function onEnd(CRM_Queue_TaskContext $ctx) {
     //set a status message for the user
-    CRM_Core_Session::setStatus('All selected users are anonymized or cleaned. All sensitive data for the selected users has been removed.', 'Queue', 'success');
-    CRM_Core_Error::debug_log_message('All selected users are anonymized or cleaned. All sensitive data for the selected users has been removed.');
+    $msg = 'All selected users are anonymized or cleaned. All sensitive data for the selected users has been removed.';
+    CRM_Core_Session::setStatus($msg, 'Queue', 'success');
+    CRM_Core_Error::debug_log_message($msg);
 
-    $session = CRM_Core_Session::singleton();
-    $session->pushUserContext(CRM_Utils_System::url('civicrm', 'reset=1', true));
+    //$session = CRM_Core_Session::singleton();
+    //$session->pushUserContext(CRM_Utils_System::url('civicrm', 'reset=1', true));
+
+    $result = array();
+    $result['is_error'] = 0;
+    $result['numberOfItems'] = 0;
+    $result['is_continue'] = 0;
+    if (!empty($ctx->onEndUrl)) {
+      $result['redirect_url'] = $ctx->onEndUrl;
+    }
+
+    return $result;
   }
 
   /**
