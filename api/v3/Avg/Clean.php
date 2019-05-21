@@ -28,10 +28,11 @@ function civicrm_api3_avg_clean($params) {
     //Set time limit to 1800, otherwise execution is stopped after 30 seconds
     set_time_limit(1800); //Run max half an hour
 
+    $grp_id = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_custom_group WHERE title = 'Expert Data'");
     $params_expertStatusField = array(
       'version' => 3,
       'sequential' => 1,
-      'custom_group_name' => 'Expert data',
+      'custom_group_id' => $grp_id,
       'name' => 'expert_status',
       'return' => 'column_name',
     );
@@ -110,8 +111,12 @@ function civicrm_api3_avg_clean($params) {
         'onEndUrl' => CRM_Utils_System::url('civicrm', 'reset=1'),
       ));
 
-      $runner->runAllViaWeb();
+      $runner->runAll();
     }
+
+    $params['version'] = 3;
+    $params['sequential'] = 1;
+    $params['users'] = $users;
 
     return civicrm_api3_create_success($returnValues, $params, 'Avg', 'Clean');
 }

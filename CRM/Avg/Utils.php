@@ -856,10 +856,12 @@ class CRM_Avg_Utils {
     $sql = '';
 
     try{
+      $grp_id = CRM_Core_DAO::singleValueQuery("SELECT id FROM civicrm_custom_group WHERE title = 'Expert Data'");
+
       $params_expertStatusField = array(
         'version' => 3,
         'sequential' => 1,
-        'custom_group_name' => 'Expert data',
+        'custom_group_id' => $grp_id,
         'name' => 'expert_status',
         'return' => 'column_name',
       );

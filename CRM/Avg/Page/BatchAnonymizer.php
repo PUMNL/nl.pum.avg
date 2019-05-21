@@ -33,7 +33,6 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
 
     //$session = CRM_Core_Session::singleton();
     //$session->pushUserContext(CRM_Utils_System::url('civicrm', 'reset=1', true));
-
     $result = array();
     $result['is_error'] = 0;
     $result['numberOfItems'] = 0;
@@ -41,6 +40,8 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
     if (!empty($ctx->onEndUrl)) {
       $result['redirect_url'] = $ctx->onEndUrl;
     }
+
+    $ctx->queue->deleteQueue();
 
     return $result;
   }
