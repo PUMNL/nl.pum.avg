@@ -103,20 +103,23 @@ function civicrm_api3_avg_clean($params) {
       //now add this task to the queue
       $queue->createItem($task);
 
+      //If the runner has an onEndUrl, then it will not return, so redirect will take place in onEnd function
       $runner = new CRM_Queue_Runner(array(
         'title' => ts('nl.pum.avg: Clean inactive users queue runner'), //title fo the queue
         'queue' => $queue, //the queue object
         'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE,
         'onEnd' => array('CRM_Avg_Page_BatchAnonymizer', 'onEnd'),
-        'onEndUrl' => CRM_Utils_System::url('civicrm', 'reset=1'),
+        //'onEndUrl' => CRM_Utils_System::url('civicrm', 'reset=1'),
       ));
 
-      $runner->runAll();
+      $queueResult = $runner->runAll();
     }
 
     $params['version'] = 3;
     $params['sequential'] = 1;
     $params['users'] = $users;
+    $returnValues['users'] = $users;
+    $returnValues['queueResult'] = $queueResult;
 
     return civicrm_api3_create_success($returnValues, $params, 'Avg', 'Clean');
 }
