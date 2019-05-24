@@ -70,7 +70,6 @@ With these reports you can also anonymize users in a batch.
 ## To do
 
 * Currently it's not possible yet to select which fields to anonymize using the reports, only from contact selection screens
-* Scheduled job executes and runs fine, but the progress bar of the queue runner is not working and after the job is succesfully executed it does not redirect to a page.
 
 ## Documentation
 

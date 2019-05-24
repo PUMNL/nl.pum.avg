@@ -17,7 +17,7 @@ Please be patient after pressing the Anonymize button. It can take up a couple o
 <div class="label font-red"><b>WARNING:</b> This action cannot be undone! Once you have anonymized the user, the data for this user is permanently deleted.</div>
 <br />
 <div class="crm-submit-buttons">
-{$set_all_buttons_to_yes} {$set_all_buttons_to_no}
+{$set_all_buttons_to_yes} {$set_all_buttons_to_no} {$set_all_buttons_to_cleaning}
 </div>
 {foreach from=$elementNames item=elementName}
   <div class="crm-section">

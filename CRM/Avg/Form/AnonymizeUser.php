@@ -204,6 +204,7 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
       $this->assign('back_to_contact','<a href="'.CRM_Utils_System::url('civicrm/contact/view','action=view&reset=1&cid='.CRM_Utils_Request::retrieve('cid', 'Integer')).'" class="button">&lt;&lt; Back to contact</a>');
       $this->assign('set_all_buttons_to_yes','<a href="#" class="button" onclick="anonymize_groups_yes();">Set all groups to "Yes"</a>');
       $this->assign('set_all_buttons_to_no','<a href="#" class="button" onclick="anonymize_groups_no();">Set all groups to "No"</a>');
+      $this->assign('set_all_buttons_to_cleaning','<a href="#" class="button" onclick="anonymize_groups_cleaning();">Set groups for cleaning</a>');
       $this->add('hidden','cid',CRM_Utils_Request::retrieve('cid', 'Integer'));
       $this->addButtons(array(
         array(
@@ -301,7 +302,18 @@ class CRM_Avg_Form_AnonymizeUser extends CRM_Core_Form {
       $AvgUtils->removeDocuments();
     }
 
-    $AvgUtils->addUserToAnonymizedUsers();
+    $clean_or_anon = '';
+    //if one of the options is set to no, user is not fully anonymized, so put in group 'cleaned inactive users'
+    foreach($values as $key => $value){
+      if($value == 'no'){
+        $clean_or_anon = 'clean';
+      }
+    }
+    if($clean_or_anon == 'clean') {
+      $AvgUtils->addUserToCleanedInactiveUsers();
+    } else {
+      $AvgUtils->addUserToAnonymizedUsers();
+    }
 
     $cid = CRM_Utils_Request::retrieve('cid', 'Integer');
     if(!empty($cid)){
