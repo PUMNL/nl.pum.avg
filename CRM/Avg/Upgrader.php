@@ -32,6 +32,7 @@ class CRM_Avg_Upgrader extends CRM_Avg_Upgrader_Base {
     }
 
     CRM_Avg_Upgrader::upgrade_1001(FALSE);
+    CRM_Avg_Upgrader::upgrade_1002(FALSE);
 
     return TRUE;
   }
@@ -59,6 +60,36 @@ class CRM_Avg_Upgrader extends CRM_Avg_Upgrader_Base {
       $result = civicrm_api('Group', 'create', $params);
     }
 
+    return TRUE;
+  }
+
+  public function upgrade_1002($info=TRUE) {
+    if ($info) {
+      $this->ctx->log->info('Applying update 1002');
+    }
+
+    $params_group_id = array(
+      'version' => 3,
+      'sequential' => 1,
+      'title' => 'Cleaned Inactive Users',
+      'return' => 'id',
+    );
+    $group_id = civicrm_api('Group', 'getvalue', $params_group_id);
+
+    $params = array(
+      'version' => 3,
+      'sequential' => 1,
+      'group_id' => $group_id,
+      'status' => 'Added',
+      'rowCount' => 99999,
+    );
+    $result = civicrm_api('GroupContact', 'get', $params);
+
+    foreach($result['values'] as $key => $value){
+      //$value['contact_id']
+      $AvgUtils = new CRM_Avg_Utils($value['contact_id']);
+      $AvgUtils->removeContactSegments();
+    }
     return TRUE;
   }
   /**

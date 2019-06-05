@@ -698,12 +698,18 @@ class CRM_Avg_Utils {
             //For now using a manual delete-query.
             $end_date = date('YmdHis');
             try {
-              $sql = "UPDATE civicrm_contact_segment SET is_active = %1, end_date = %2 WHERE contact_id = %3";
+              $sql = "UPDATE civicrm_contact_segment SET is_active = %1 WHERE contact_id = %2";
 
               CRM_Core_DAO::executeQuery($sql, array(
-                1 => array(1, 'Integer'),
-                2 => array($end_date, 'String'),
-                3 => array($this->cid, 'Integer')
+                1 => array(0, 'Integer'),
+                2 => array($this->cid, 'Integer')
+              ));
+
+              $sql2 = "UPDATE civicrm_contact_segment SET end_date = %1 WHERE contact_id = %2 AND end_date IS NULL";
+
+              CRM_Core_DAO::executeQuery($sql2, array(
+                1 => array($end_date, 'String'),
+                2 => array($this->cid, 'Integer')
               ));
             } catch (Exception $e) {
               CRM_Core_Error::debug_log_message($e->getCode()." - ".$e->getMessage(), FALSE);
