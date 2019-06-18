@@ -11,8 +11,8 @@ return array (
     'params' =>
     array (
       'version' => 3,
-      'name' => 'Call Avg.Clean API',
-      'description' => 'Call Avg.Clean API',
+      'name' => 'AVG: Clean Inactive Users',
+      'description' => 'Job to clean all users that have exit status',
       'run_frequency' => 'Daily',
       'api_entity' => 'Avg',
       'api_action' => 'Clean',
