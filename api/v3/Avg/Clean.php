@@ -93,8 +93,8 @@ function civicrm_api3_avg_clean($params) {
           'remove_workhistory' => 'yes',
           'remove_education' => 'yes',
           'remove_languages' => 'yes',
-          'remove_groups' => 'yes',
-          'remove_contactsegments' => 'yes',
+          'remove_groups' => 'no',
+          'remove_contactsegments' => 'no',
           'remove_documents' => 'yes',
           'clean' => 'yes', //extra parameter for anonymize or clean
         ))

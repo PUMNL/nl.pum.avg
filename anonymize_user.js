@@ -54,8 +54,8 @@ function anonymize_groups_cleaning() {
   cj('#remove_workhistory').val('yes');
   cj('#remove_education').val('yes');
   cj('#remove_languages').val('yes');
-  cj('#remove_groups').val('yes');
-  cj('#remove_contactsegments').val('yes');
+  cj('#remove_groups').val('no');
+  cj('#remove_contactsegments').val('no');
   cj('#remove_documents').val('yes');
 
 }
