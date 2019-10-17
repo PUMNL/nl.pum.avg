@@ -337,10 +337,12 @@ class CRM_Avg_Utils {
       foreach($custom_group_names as $group_name => $remove) {
         if($remove == 'yes') {
           $grp_id = CRM_Core_DAO::singleValueQuery("SELECT `id` FROM `civicrm_custom_group` WHERE `title` = %1 LIMIT 1", array(1 => array($group_name, 'String')));
-          $dao_field_ids = CRM_Core_DAO::executeQuery("SELECT `id` FROM `civicrm_custom_field` WHERE `custom_group_id` = %1", array(1 => array($grp_id, 'String')));
+          if (!empty($grp_id) && is_int((int)$grp_id)){
+            $dao_field_ids = CRM_Core_DAO::executeQuery("SELECT `id` FROM `civicrm_custom_field` WHERE `custom_group_id` = %1", array(1 => array((int)$grp_id, 'Integer')));
 
-          while($dao_field_ids->fetch()){
-            $params['custom_'.$dao_field_ids->id] = '';
+            while($dao_field_ids->fetch()){
+              $params['custom_'.$dao_field_ids->id] = '';
+            }
           }
         }
       }
