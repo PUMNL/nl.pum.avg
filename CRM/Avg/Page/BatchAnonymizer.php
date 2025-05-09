@@ -117,7 +117,7 @@ class CRM_Avg_Page_BatchAnonymizer extends CRM_Core_Page {
           'Bank Information' => $values['remove_bankinformation'],
           'Nationality' => $values['remove_nationality'],
           'Medical Information' => $values['remove_medical'],
-          'Flight information' => $values['remove_flight']
+          'Flight Preferences' => $values['remove_flight']
         )
       );
 

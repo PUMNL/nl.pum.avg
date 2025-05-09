@@ -170,6 +170,7 @@ class CRM_Avg_Form_Task_SelectData extends CRM_Contact_Form_Task {
     $this->assign('back_to_civicrm','<a href="'.CRM_Utils_System::url('civicrm/contact/search','reset=1').'" class="button">&lt;&lt; Back to contact search</a>');
     $this->assign('set_all_buttons_to_yes','<a href="#" class="button" onclick="anonymize_groups_yes();">Set all groups to "Yes"</a>');
     $this->assign('set_all_buttons_to_no','<a href="#" class="button" onclick="anonymize_groups_no();">Set all groups to "No"</a>');
+    $this->assign('set_all_buttons_to_cleaning','<a href="#" class="button" onclick="anonymize_groups_cleaning();">Set groups for cleaning</a>');
 
     $this->assign('elementNames', $this->getRenderableElementNames());
 

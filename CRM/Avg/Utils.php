@@ -326,8 +326,6 @@ class CRM_Avg_Utils {
    */
   public function removeCustomGroupDataOfContact($custom_group_names) {
     if(is_numeric($this->cid)) {
-      $groups = array();
-
       $params = array(
         'version' => 3,
         'sequential' => 1,
